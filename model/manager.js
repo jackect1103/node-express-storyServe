@@ -3,45 +3,86 @@ mongoose.set('useCreateIndex', true)
 
 // 管理员数据表
 var managerSchema = new mongoose.Schema({
-    userName: { type: String, require: true, index: { unique: true } },
+    managerName: { type: String, require: true, index: { unique: true } },
     password: { type: String, require: true },
     birthday: String,
     gender: String,
-    registerDate: { type: Date, default: Date.now() }
+    registerDate: { type: Date, default: Date.now() },
+    img: String
 })
 
 var managerModel = mongoose.model('manager', managerSchema);
 managerModel.createIndexes();
 
-// 获取所有用户信息（后台）
-var getAllUser = () => {
-    return managerModel.find();
-}
-
-// 获取管理员信息
-var findManagerLogin = () => {
-    // managerModel.findOne();
+ 
+// 管理员登录
+var findManagerLogin = (data) => {
+    console.log(data.managerName);
+    console.log(data.password);
+    return managerModel.findOne(data);
 }
 
 //注册管理员
-var registerManager = () => {
-    // managerModel.insert(param);
+var registerManager = (data) => {
+    console.log('管理员注册数据：' + data);
+    for (const key in data) {
+        console.log(key+":"+data[key]);
+    }
+    var manager = new managerModel(data)
+    return manager.save()
+        .then(() => {
+            return true
+        })
+        .catch(() => {
+            return false;
+        })
 }
 
-//修改管理员
-var updateManager = () => {
-    // managerModel.update(oldParam, newParam);
+//获取当前管理员信息
+var getSingleInfom = (curName) => {
+    // console.log(curName);
+    var response = managerModel.findOne(curName)
+    // console.log(response.userName);
+    if (response) {
+        return response; 
+    } else {
+        return false;
+    }
+
+};
+
+//修改密码
+var findPassword = (curName, password) => {
+    console.log('修改密码curName' + curName);
+    console.log('修改密码password' + password);
+    return managerModel.updateOne({ 'managerName': curName }, { $set: { "password": password } })
+        .then(() => {
+            return true;
+        })
+        .catch(() => {
+            return false;
+        })
 }
 
-//删除用户（用于后台）
-var deleteSingleUser = () => {
-    // managerModel.remove();
+//修改管理员信息
+var updateInforms = (curName, informs) => {
+    console.log('修改管理员信息curName:' + curName);
+    for (const iterator in informs) {
+        console.log('修改管理员信息informs:' + informs[iterator]);
+    }
+    return managerModel.updateOne({ "managerName": curName }, { $set: informs })
+        .then(() => {
+            return true;
+        })
+        .catch(() => {
+            return false;
+        })
 }
 
 module.exports = {
-    getAllUser,
     findManagerLogin,
     registerManager,
-    updateManager,
-    deleteSingleUser,
+    getSingleInfom,
+    findPassword,
+    updateInforms
 }
